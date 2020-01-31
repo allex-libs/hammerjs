@@ -1,0 +1,10 @@
+{
+  "browserify": {
+    "dist/browserified.js": "browserify.js"
+  },
+  "dependencies": {
+    "js": [
+      "node_modules/hammerjs/hammer.min.js"
+    ]
+  }
+}
