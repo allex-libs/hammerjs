@@ -10,8 +10,10 @@ function createHammerableMixin (execlib) {
     this.hammer = null;
     this.hammerPos = null;
     this.lastKnownHammerPos = null;
+    this.hammerDistance = null;
   }
   HammerableMixin.prototype.destroy = function () {
+    this.hammerDistance = null;
     this.lastKnownHammerPos = null;
     this.hammerPos = null;
     if (this.hammer) {
@@ -30,7 +32,7 @@ function createHammerableMixin (execlib) {
     if (this.hammer) {
       this.hammer.destroy();
     }
-    this.hammer = new Hammer(this.$element[0]);
+    this.hammer = new Hammer(this.$element[0], this.getConfigVal('hammer_native_options'));
     this.hammer.on('hammer.input', this.onHammerer);
     this.hammer.on('swipe', this.onSwipeer);
     this.hammer.on('pan', this.onPaner);
@@ -72,14 +74,30 @@ function createHammerableMixin (execlib) {
     console.warn('no hammerPos?');
   };
 
+  /*
   HammerableMixin.prototype.isDistanceWeak = function (hevnt) {
     var mhd;
     if (!lib.isNumber(hevnt.distance)) {
       return true;
     }
     mhd = this.minHammerDistance();
-    console.log('minHammerDistance', mhd, 'vs', hevnt.distance);
+    console.log('minHammerDistance', mhd, 'vs', hevnt.distance, 'devicePixelRatio', window.devicePixelRatio, 'whole event', hevnt);
     if (hevnt.distance<mhd) {
+      console.log('weak!');
+      this.resetHammerPosition();
+      return true;
+    }
+    return false;
+  };
+  */
+  HammerableMixin.prototype.isDistanceWeak = function (hevnt) {
+    var mhd;
+    if (!lib.isNumber(this.hammerDistance)) {
+      return true;
+    }
+    mhd = this.minHammerDistance();
+    console.log('minHammerDistance', mhd, 'vs', this.hammerDistance, 'devicePixelRatio', window.devicePixelRatio, 'whole event', hevnt);
+    if (this.hammerDistance<mhd) {
       console.log('weak!');
       this.resetHammerPosition();
       return true;
@@ -123,7 +141,7 @@ function createHammerableMixin (execlib) {
       this.hammerPos = this.$element.offset();
     }
     if (hevnt.isFinal) {
-      console.log('final event!');
+      console.log('final event!', hevnt.direction);
       this.isDistanceWeak(hevnt);
       this.lastKnownHammerPos = this.hammerPos;
       this.hammerPos = null;
@@ -133,7 +151,8 @@ function createHammerableMixin (execlib) {
     if (!this.hammerPos) {
       return;
     }
-    console.log('EVENT OD onHammerPan', hevnt, this.hammerPos);
+    this.hammerDistance = hevnt.distance;
+    //console.log('EVENT OD onHammerPan', hevnt, this.hammerPos);
     this.onHammerPan (hevnt);
   }
 
